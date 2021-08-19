@@ -42,7 +42,7 @@ impl JsonRenderer<'_> {
         let span = item.span(self.tcx);
         let clean::Item { name, attrs: _, kind: _, visibility, def_id, cfg: _ } = item;
         let inner = match *item.kind {
-            clean::StrippedItem(_) => return None,
+            clean::StrippedItem(_) | clean::KeywordItem(_) => return None,
             _ => from_clean_item(item, self.tcx),
         };
         Some(Item {

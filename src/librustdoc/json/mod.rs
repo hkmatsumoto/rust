@@ -186,14 +186,17 @@ impl<'tcx> FormatRenderer<'tcx> for JsonRenderer<'tcx> {
             } else if let types::ItemEnum::Union(ref mut u) = new_item.inner {
                 u.impls = self.get_impls(id.expect_def_id())
             }
-            let removed = self.index.borrow_mut().insert(from_item_id(id), new_item.clone());
+            self.index.borrow_mut().insert(from_item_id(id), new_item.clone());
 
             // FIXME(adotinthevoid): Currently, the index is duplicated. This is a sanity check
             // to make sure the items are unique. The main place this happens is when an item, is
             // reexported in more than one place. See `rustdoc-json/reexport/in_root_and_mod`
-            if let Some(old_item) = removed {
-                assert_eq!(old_item, new_item);
-            }
+            // NOTE(hkamtsumoto): When compiling rather big crates like `std`, items are often
+            // reexported in more than on place, and thus duplicated index will be generated. This
+            // is not preferrable, but for roogle, we compromise.
+            // if let Some(old_item) = removed {
+            //     assert_eq!(old_item, new_item);
+            // }
         }
 
         Ok(())

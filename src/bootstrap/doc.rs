@@ -458,6 +458,7 @@ impl Step for Std {
                 .arg("--markdown-no-toc")
                 .arg("-Z")
                 .arg("unstable-options")
+                .arg("--output-format=json")
                 .arg("--resource-suffix")
                 .arg(&builder.version)
                 .arg("--index-page")
@@ -592,9 +593,9 @@ impl Step for Rustc {
         cargo.rustdocflag("-Arustdoc::private-intra-doc-links");
         cargo.rustdocflag("--enable-index-page");
         cargo.rustdocflag("-Zunstable-options");
+        cargo.rustdocflag("--output-format=json");
         cargo.rustdocflag("-Znormalize-docs");
         cargo.rustdocflag("--show-type-layout");
-        cargo.rustdocflag("--generate-link-to-definition");
         compile::rustc_cargo(builder, &mut cargo, target);
         cargo.arg("-Zunstable-options");
         cargo.arg("-Zskip-rustdoc-fingerprint");
