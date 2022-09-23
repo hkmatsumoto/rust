@@ -55,11 +55,11 @@ mod allocator;
 mod asm;
 mod attributes;
 mod base;
-mod builder;
+pub mod builder;
 mod callee;
-mod common;
+pub mod common;
 mod consts;
-mod context;
+pub mod context;
 mod coverageinfo;
 mod debuginfo;
 mod declare;
@@ -72,12 +72,12 @@ pub mod llvm {
     pub use super::llvm_::*;
 }
 
-mod llvm_util;
+pub mod llvm_util;
 mod mono_item;
-mod type_;
+pub mod type_;
 mod type_of;
 mod va_arg;
-mod value;
+pub mod value;
 
 #[derive(Clone)]
 pub struct LlvmCodegenBackend(());
@@ -391,7 +391,7 @@ unsafe impl Send for ModuleLlvm {}
 unsafe impl Sync for ModuleLlvm {}
 
 impl ModuleLlvm {
-    fn new(tcx: TyCtxt<'_>, mod_name: &str) -> Self {
+    pub fn new(tcx: TyCtxt<'_>, mod_name: &str) -> Self {
         unsafe {
             let llcx = llvm::LLVMRustContextCreate(tcx.sess.fewer_names());
             let llmod_raw = context::create_module(tcx, llcx, mod_name) as *const _;

@@ -1005,6 +1005,11 @@ extern "C" {
     pub fn LLVMContextDispose(C: &'static mut Context);
     pub fn LLVMGetMDKindIDInContext(C: &Context, Name: *const c_char, SLen: c_uint) -> c_uint;
 
+    // Dump LLVM structs to STDIO.
+    pub fn LLVMDumpModule(M: &Module);
+    pub fn LLVMDumpValue(Val: &Value);
+    pub fn LLVMDumpType(Ty: &Type);
+
     // Create modules.
     pub fn LLVMModuleCreateWithNameInContext(ModuleID: *const c_char, C: &Context) -> &Module;
     pub fn LLVMGetModuleContext(M: &Module) -> &Context;

@@ -47,7 +47,7 @@ pub struct CodegenCx<'ll, 'tcx> {
 
     pub llmod: &'ll llvm::Module,
     pub llcx: &'ll llvm::Context,
-    pub codegen_unit: &'tcx CodegenUnit<'tcx>,
+    pub codegen_unit: Option<&'tcx CodegenUnit<'tcx>>,
 
     /// Cache instances of monomorphic and polymorphic items
     pub instances: RefCell<FxHashMap<Instance<'tcx>, &'ll Value>>,
@@ -327,9 +327,9 @@ pub unsafe fn create_module<'ll>(
 }
 
 impl<'ll, 'tcx> CodegenCx<'ll, 'tcx> {
-    pub(crate) fn new(
+    pub fn new(
         tcx: TyCtxt<'tcx>,
-        codegen_unit: &'tcx CodegenUnit<'tcx>,
+        codegen_unit: Option<&'tcx CodegenUnit<'tcx>>,
         llvm_module: &'ll crate::ModuleLlvm,
     ) -> Self {
         // An interesting part of Windows which MSVC forces our hand on (and
@@ -399,11 +399,11 @@ impl<'ll, 'tcx> CodegenCx<'ll, 'tcx> {
             None
         };
 
-        let dbg_cx = if tcx.sess.opts.debuginfo != DebugInfo::None {
+        let dbg_cx = if codegen_unit.is_some() && tcx.sess.opts.debuginfo != DebugInfo::None {
             let dctx = debuginfo::CodegenUnitDebugContext::new(llmod);
             debuginfo::metadata::build_compile_unit_di_node(
                 tcx,
-                codegen_unit.name().as_str(),
+                codegen_unit.unwrap().name().as_str(),
                 &dctx,
             );
             Some(dctx)
@@ -548,7 +548,7 @@ impl<'ll, 'tcx> MiscMethods<'tcx> for CodegenCx<'ll, 'tcx> {
     }
 
     fn codegen_unit(&self) -> &'tcx CodegenUnit<'tcx> {
-        self.codegen_unit
+        self.codegen_unit.unwrap_or_else(|| panic!("codegen_unit is needed but not set"))
     }
 
     fn used_statics(&self) -> &RefCell<Vec<&'ll Value>> {

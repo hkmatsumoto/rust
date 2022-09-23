@@ -10,6 +10,7 @@ use crate::common;
 use crate::context::CodegenCx;
 use crate::llvm;
 use crate::value::Value;
+use rustc_codegen_ssa::base::codegen_instance;
 use rustc_codegen_ssa::traits::*;
 
 use rustc_middle::ty::layout::{FnAbiOf, HasTyCtxt};
@@ -90,6 +91,10 @@ pub fn get_fn<'ll, 'tcx>(cx: &CodegenCx<'ll, 'tcx>, instance: Instance<'tcx>) ->
         debug!("get_fn: not casting pointer!");
 
         attributes::from_fn_attrs(cx, llfn, instance);
+
+        if cx.codegen_unit.is_none() && instance.def_id().is_local() {
+            codegen_instance::<crate::builder::Builder<'_, 'll, 'tcx>>(cx, instance);
+        }
 
         // Apply an appropriate linkage/visibility value to our item that we
         // just declared.

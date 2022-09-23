@@ -4,7 +4,7 @@ use crate::llvm;
 
 use llvm::coverageinfo::CounterMappingRegion;
 use rustc_codegen_ssa::coverageinfo::map::{Counter, CounterExpression};
-use rustc_codegen_ssa::traits::{ConstMethods, CoverageInfoMethods};
+use rustc_codegen_ssa::traits::{ConstMethods, CoverageInfoMethods, MiscMethods};
 use rustc_data_structures::fx::FxIndexSet;
 use rustc_hir::def::DefKind;
 use rustc_hir::def_id::DefIdSet;
@@ -40,13 +40,13 @@ pub fn finalize<'ll, 'tcx>(cx: &CodegenCx<'ll, 'tcx>) {
         tcx.sess.fatal("rustc option `-C instrument-coverage` requires LLVM 12 or higher.");
     }
 
-    debug!("Generating coverage map for CodegenUnit: `{}`", cx.codegen_unit.name());
+    debug!("Generating coverage map for CodegenUnit: `{}`", cx.codegen_unit().name());
 
     // In order to show that unused functions have coverage counts of zero (0), LLVM requires the
     // functions exist. Generate synthetic functions with a (required) single counter, and add the
     // MIR `Coverage` code regions to the `function_coverage_map`, before calling
     // `ctx.take_function_coverage_map()`.
-    if cx.codegen_unit.is_code_coverage_dead_code_cgu() {
+    if cx.codegen_unit().is_code_coverage_dead_code_cgu() {
         add_unused_functions(cx);
     }
 
@@ -65,7 +65,7 @@ pub fn finalize<'ll, 'tcx>(cx: &CodegenCx<'ll, 'tcx>) {
     // Encode coverage mappings and generate function records
     let mut function_data = Vec::new();
     for (instance, function_coverage) in function_coverage_map {
-        debug!("Generate function coverage for {}, {:?}", cx.codegen_unit.name(), instance);
+        debug!("Generate function coverage for {}, {:?}", cx.codegen_unit().name(), instance);
         let mangled_function_name = tcx.symbol_name(instance).to_string();
         let source_hash = function_coverage.source_hash();
         let is_used = function_coverage.is_used();
@@ -284,7 +284,7 @@ fn save_function_record(
 /// code regions for the same function more than once which can lead to linker errors regarding
 /// duplicate symbols.
 fn add_unused_functions<'ll, 'tcx>(cx: &CodegenCx<'ll, 'tcx>) {
-    assert!(cx.codegen_unit.is_code_coverage_dead_code_cgu());
+    assert!(cx.codegen_unit().is_code_coverage_dead_code_cgu());
 
     let tcx = cx.tcx;
 

@@ -26,7 +26,7 @@ use rustc_target::spec::abi::Abi;
 
 /// Used by `FunctionCx::codegen_terminator` for emitting common patterns
 /// e.g., creating a basic block, calling a function, etc.
-struct TerminatorCodegenHelper<'tcx> {
+pub struct TerminatorCodegenHelper<'tcx> {
     bb: mir::BasicBlock,
     terminator: &'tcx mir::Terminator<'tcx>,
     funclet_bb: Option<mir::BasicBlock>,
@@ -243,7 +243,7 @@ impl<'a, 'tcx> TerminatorCodegenHelper<'tcx> {
 /// Codegen implementations for some terminator variants.
 impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
     /// Generates code for a `Resume` terminator.
-    fn codegen_resume_terminator(&mut self, helper: TerminatorCodegenHelper<'tcx>, mut bx: Bx) {
+    pub fn codegen_resume_terminator(&mut self, helper: TerminatorCodegenHelper<'tcx>, mut bx: Bx) {
         if let Some(funclet) = helper.funclet(self) {
             bx.cleanup_ret(funclet, None);
         } else {
@@ -261,7 +261,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         }
     }
 
-    fn codegen_switchint_terminator(
+    pub fn codegen_switchint_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
         mut bx: Bx,
@@ -300,7 +300,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         }
     }
 
-    fn codegen_return_terminator(&mut self, mut bx: Bx) {
+    pub fn codegen_return_terminator(&mut self, mut bx: Bx) {
         // Call `va_end` if this is the definition of a C-variadic function.
         if self.fn_abi.c_variadic {
             // The `VaList` "spoofed" argument is just after all the real arguments.
@@ -368,7 +368,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
     }
 
     #[tracing::instrument(level = "trace", skip(self, helper, bx))]
-    fn codegen_drop_terminator(
+    pub fn codegen_drop_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
         mut bx: Bx,
@@ -487,7 +487,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         );
     }
 
-    fn codegen_assert_terminator(
+    pub fn codegen_assert_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
         mut bx: Bx,
@@ -563,7 +563,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         helper.do_call(self, &mut bx, fn_abi, llfn, &args, None, cleanup, &[]);
     }
 
-    fn codegen_abort_terminator(
+    pub fn codegen_abort_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
         mut bx: Bx,
@@ -580,7 +580,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
     }
 
     /// Returns `true` if this is indeed a panic intrinsic and codegen is done.
-    fn codegen_panic_intrinsic(
+    pub fn codegen_panic_intrinsic(
         &mut self,
         helper: &TerminatorCodegenHelper<'tcx>,
         bx: &mut Bx,
@@ -660,7 +660,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         }
     }
 
-    fn codegen_call_terminator(
+    pub fn codegen_call_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
         mut bx: Bx,
@@ -692,6 +692,10 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             _ => bug!("{} is not callable", callee.layout.ty),
         };
         let def = instance.map(|i| i.def);
+
+        if let Some(instance) = instance {
+            self.cx.get_fn(instance);
+        }
 
         if let Some(ty::InstanceDef::DropGlue(_, None)) = def {
             // Empty drop glue; a no-op.
@@ -1038,7 +1042,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         );
     }
 
-    fn codegen_asm_terminator(
+    pub fn codegen_asm_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
         mut bx: Bx,
@@ -1133,7 +1137,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         self.codegen_terminator(bx, bb, data.terminator());
     }
 
-    fn codegen_terminator(
+    pub fn codegen_terminator(
         &mut self,
         mut bx: Bx,
         bb: mir::BasicBlock,

@@ -253,7 +253,7 @@ impl<'ll> CodegenCx<'ll, '_> {
         }
 
         let defined_in_current_codegen_unit =
-            self.codegen_unit.items().contains_key(&MonoItem::Static(def_id));
+            self.codegen_unit().items().contains_key(&MonoItem::Static(def_id));
         assert!(
             !defined_in_current_codegen_unit,
             "consts::get_static() should always hit the cache for \
