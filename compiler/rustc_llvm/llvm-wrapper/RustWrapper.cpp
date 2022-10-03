@@ -1,4 +1,5 @@
 #include "LLVMWrapper.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/DiagnosticHandler.h"
 #include "llvm/IR/DiagnosticInfo.h"
@@ -1966,4 +1967,11 @@ extern "C" int32_t LLVMRustGetElementTypeArgIndex(LLVMValueRef CallSite) {
     }
 #endif
     return -1;
+}
+
+extern "C" LLVMExecutionEngineRef LLVMRustCreateExecutionEngineForModule(LLVMModuleRef M) {
+  LLVMExecutionEngineRef EE;
+  char *OutEE;
+  LLVMCreateExecutionEngineForModule(&EE, M, &OutEE);
+  return EE;
 }

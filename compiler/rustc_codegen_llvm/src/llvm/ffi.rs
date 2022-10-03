@@ -685,6 +685,10 @@ extern "C" {
     pub type DiagnosticHandler;
 }
 
+extern "C" {
+    pub type ExecutionEngine;
+}
+
 pub type DiagnosticHandlerTy = unsafe extern "C" fn(&DiagnosticInfo, *mut c_void);
 pub type InlineAsmDiagHandlerTy = unsafe extern "C" fn(&SMDiagnostic, *const c_void, c_uint);
 
@@ -2556,4 +2560,8 @@ extern "C" {
     pub fn LLVMRustGetMangledName(V: &Value, out: &RustString);
 
     pub fn LLVMRustGetElementTypeArgIndex(CallSite: &Value) -> i32;
+
+    pub fn LLVMLinkInMCJIT();
+    pub fn LLVMRustCreateExecutionEngineForModule(M: &Module) -> &'static ExecutionEngine;
+    pub fn LLVMGetFunctionAddress(EE: &ExecutionEngine, Name: *const c_char) -> u64;
 }
